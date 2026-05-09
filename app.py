@@ -88,27 +88,24 @@ def get_agent_stats(agent_name):
         
         values = result.get('values', [])
         
-        # 代理店名でフィルタして集計
         referral_count = 0
         total_backup = 0
         
         for row in values[1:]:  # ヘッダーをスキップ
             if len(row) > 0 and row[0] == agent_name:
                 referral_count += 1
-                # 月間バック額を集計（プラン別に計算）
-                if len(row) > 5:
-                    plan = row[5]
-                    if plan == 'ライト':
-                        total_backup += 1980 * 0.5
-                    elif plan == 'スタンダード':
-                        total_backup += 2980 * 0.5
-                    elif plan == 'プロ':
-                        total_backup += 3980 * 0.5
+                # G列（月間バック額）を直接使用
+                if len(row) > 6:  # G列は index 6
+                    try:
+                        backup = int(row[6]) if row[6] else 0
+                        total_backup += backup
+                    except:
+                        pass
         
         return {
             'referral_count': referral_count,
-            'total_backup': int(total_backup),
-            'profit': int(total_backup) - 3000
+            'total_backup': total_backup,
+            'profit': total_backup - 3000
         }
     
     except Exception as e:
