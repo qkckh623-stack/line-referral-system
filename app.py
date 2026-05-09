@@ -25,10 +25,23 @@ GOOGLE_SHEETS_ID = os.getenv('GOOGLE_SHEETS_ID')
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 webhook_handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
-# Google Sheets 認証（Application Default Credentials を使用）
+# Google Sheets 認証（環境変数から JSON を読み込む）
 def get_sheets_service():
     try:
-        credentials, project = default()
+        # 環境変数から JSON 文字列を取得
+        credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+        
+        if credentials_json:
+            # JSON 文字列をパース
+            credentials_dict = json.loads(credentials_json)
+            credentials = Credentials.from_service_account_info(
+                credentials_dict,
+                scopes=['https://www.googleapis.com/auth/spreadsheets']
+            )
+        else:
+            # フォールバック（ローカル開発用）
+            credentials, project = default()
+        
         service = build('sheets', 'v4', credentials=credentials)
         return service
     except Exception as e:
